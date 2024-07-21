@@ -1,62 +1,343 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snake game</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snake Game</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
     <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f8f9fa;
+        flex-direction: column;
+        border: 2px solid black;
+        margin: 0;
+        background: url("https://cdn.pixabay.com/photo/2024/05/31/19/59/ai-generated-8801171_1280.png");
+        background-size: 500px 700px;
+      }
 
+      .container {
+        max-width: 100%;
+      }
 
-        body
-        {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: cyan;
-            margin: 0px;
+      #gameCanvas {
+        border: 2px solid #343a40;
+        background-color: #ffffff;
+      }
+
+      #score {
+        font-size: 1.5rem;
+        margin-top: 10px;
+      }
+
+      #gameOver {
+        font-size: 2rem;
+        color: red;
+      }
+
+      #restartButton {
+        margin-top: 10px;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+      }
+
+      .controls button {
+        margin: 5px;
+      }
+
+      @media (max-width: 768px) {
+        body {
+          flex-direction: column;
         }
-        .container
-        {
-            max-width: 100%;
+
+        #gameCanvas {
+          width: 300px;
+          height: 300px;
         }
-        #gameCanvas{
-            border: 2px solid black;
-            background-color: aliceblue;
+
+        #score {
+          font-size: 1.2rem;
         }
+
+        #gameOver {
+          font-size: 1.5rem;
+        }
+
+        #restartButton {
+          font-size: 1rem;
+        }
+
+        body {
+          background: url("https://cdn.pixabay.com/photo/2024/05/31/19/59/ai-generated-8801171_1280.png");
+          background-size: 500px 700px;
+          background-repeat: no-repeat;
+        }
+      }
+
+      @media (min-width: 770px) and (max-width: 1500px) {
+        .hi {
+          display: none;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          flex-direction: column;
+        }
+
+        #gameCanvas {
+          width: 250px;
+          height: 250px;
+        }
+
+        #score {
+          font-size: 1rem;
+        }
+
+        #gameOver {
+          font-size: 1.2rem;
+        }
+
+        #restartButton {
+          font-size: 0.9rem;
+        }
+
+        body {
+          background: url("https://cdn.pixabay.com/photo/2024/05/31/19/59/ai-generated-8801171_1280.png");
+          background-size: 500px 700px;
+          background-repeat: no-repeat;
+        }
+      }
     </style>
+  </head>
+  <body>
+    <div id="authContainer">
+      <div id="register">
+        <h2>Register</h2>
+        <input type="text" id="regUsername" placeholder="Username" />
+        <input type="password" id="regPassword" placeholder="Password" />
+        <button onclick="register()">Register</button>
+      </div>
+      <div id="login">
+        <h2>Login</h2>
+        <input type="text" id="loginUsername" placeholder="Username" />
+        <input type="password" id="loginPassword" placeholder="Password" />
+        <button onclick="login()">Login</button>
+      </div>
+    </div>
+    <div class="container text-center" style="display: none;" id="gameContainer">
+      <h1>Snake Game</h1>
+      <canvas id="gameCanvas" width="400px" height="400px"></canvas>
 
+      <div>
+        <label for="snakeColor">Snake Color:</label>
+        <input type="color" id="snakeColor" value="#0000ff" />
+      </div>
+      <div>
+        <label for="foodColor">Food Color:</label>
+        <input type="color" id="foodColor" value="#ff0000" />
+      </div>
+      <div>
+        <label for="speed">Speed:</label>
+        <input type="range" id="speed" min="50" max="200" value="100" />
+      </div>
+      <button onclick="applySettings()">Apply Settings</button>
 
-</head>
-<body>
-    
+      <div class="controls">
+        <button class="btn btn-secondary hi" onclick="changeDirection('UP')">
+          Up
+        </button>
+      </div>
+      <div class="controls">
+        <button class="btn btn-secondary hi" onclick="changeDirection('LEFT')">
+          Left
+        </button>
+        <button class="btn btn-secondary hi" onclick="changeDirection('DOWN')">
+          Down
+        </button>
+        <button class="btn btn-secondary hi" onclick="changeDirection('RIGHT')">
+          Right
+        </button>
+      </div>
+      <button
+        id="restartButton"
+        class="btn btn-primary mt-3"
+        onclick="restartGame()"
+      >
+        Restart Game
+      </button>
+      <div id="gameOver" class="mt-3"></div>
+      <div id="score">Score: 0</div>
+    </div>
 
-<div class="container text-center">
+    <script>
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      const box = 20;
+      let snake = [[9 * box, 10 * box]];
+      let food = [
+        Math.floor(Math.random() * 20) * box,
+        Math.floor(Math.random() * 20) * box,
+      ];
+      let score = 0;
+      let d;
 
-<h1>Snake game</h1>
+      document.addEventListener("keydown", direction);
 
+      function direction(event) {
+        if (event.keyCode == 37 && d != "RIGHT") {
+          d = "LEFT";
+        } else if (event.keyCode == 38 && d != "DOWN") {
+          d = "UP";
+        } else if (event.keyCode == 39 && d != "LEFT") {
+          d = "RIGHT";
+        } else if (event.keyCode == 40 && d != "UP") {
+          d = "DOWN";
+        }
+      }
 
-<canvas id="gameCanvas" width="800px" height="500px"></canvas>
+      function changeDirection(newDirection) {
+        if (newDirection == "LEFT" && d != "RIGHT") {
+          d = "LEFT";
+        } else if (newDirection == "UP" && d != "DOWN") {
+          d = "UP";
+        } else if (newDirection == "RIGHT" && d != "LEFT") {
+          d = "RIGHT";
+        } else if (newDirection == "DOWN" && d != "UP") {
+          d = "DOWN";
+        }
+      }
 
-<div>Score : 0</div>
+      function collision(newHead, snake) {
+        for (let i = 0; i < snake.length; i++) {
+          if (newHead[0] == snake[i][0] && newHead[1] == snake[i][1]) {
+            return true;
+          }
+        }
+        return false;
+      }
 
-<button id="restartButton" class="btn btn-primary mt-3" onclick="restartGame()">RestartGame</button>
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-<div id="gameover" class="mt-3"></div>
+        for (let i = 0; i < snake.length; i++) {
+          ctx.fillStyle = i == 0 ? snakeColor : "white";
+          ctx.fillRect(snake[i][0], snake[i][1], box, box);
+          ctx.strokeStyle = "red";
+          ctx.strokeRect(snake[i][0], snake[i][1], box, box);
+        }
 
-</div>
+        ctx.fillStyle = foodColor;
+        ctx.fillRect(food[0], food[1], box, box);
 
-<script>
+        let snakeX = snake[0][0];
+        let snakeY = snake[0][1];
 
-var food = 0;
-var snakex = 0;
-var snakey = 0;
-var board = 25;
-var direction ;
+        if (d == "LEFT") snakeX -= box;
+        if (d == "UP") snakeY -= box;
+        if (d == "RIGHT") snakeX += box;
+        if (d == "DOWN") snakeY += box;
 
+        if (snakeX == food[0] && snakeY == food[1]) {
+          score++;
+          document.getElementById("score").innerHTML = "Score: " + score;
+          food = [
+            Math.floor(Math.random() * 19 + 1) * box,
+            Math.floor(Math.random() * 19 + 1) * box,
+          ];
+        } else {
+          snake.pop();
+        }
 
+        let newHead = [snakeX, snakeY];
 
-</script>
-</body>
+        if (
+          snakeX < 0 ||
+          snakeX >= 20 * box ||
+          snakeY < 0 ||
+          snakeY >= 20 * box ||
+          collision(newHead, snake)
+        ) {
+          clearInterval(game);
+          document.getElementById("gameOver").innerHTML = "Game Over";
+        }
+
+        snake.unshift(newHead);
+      }
+
+      function restartGame() {
+        clearInterval(game);
+        snake = [[9 * box, 10 * box]];
+        score = 0;
+        d = null;
+        document.getElementById("score").innerHTML = "Score: 0";
+        document.getElementById("gameOver").innerHTML = "";
+        food = [
+          Math.floor(Math.random() * 19 + 1) * box,
+          Math.floor(Math.random() * 19 + 1) * box,
+        ];
+        game = setInterval(draw, speed);
+      }
+
+      function register() {
+        const username = document.getElementById("regUsername").value;
+        const password = document.getElementById("regPassword").value;
+        localStorage.setItem(username, password);
+        alert("Registration successful");
+      }
+
+      function login() {
+        const username = document.getElementById("loginUsername").value;
+        const password = document.getElementById("loginPassword").value;
+        const storedPassword = localStorage.getItem(username);
+
+        if (storedPassword === password) {
+          alert("Login successful");
+          document.getElementById("authContainer").style.display = "none";
+          document.getElementById("gameContainer").style.display = "block";
+          restartGame();
+        } else {
+          alert("Invalid username or password");
+        }
+      }
+
+      let snakeColor = document.getElementById("snakeColor").value;
+      let foodColor = document.getElementById("foodColor").value;
+      let speed = document.getElementById("speed").value;
+
+      document.getElementById("snakeColor").addEventListener("change", (e) => {
+        snakeColor = e.target.value;
+      });
+
+      document.getElementById("foodColor").addEventListener("change", (e) => {
+        foodColor = e.target.value;
+      });
+
+      document.getElementById("speed").addEventListener("change", (e) => {
+        speed = e.target.value;
+        clearInterval(game);
+        game = setInterval(draw, speed);
+      });
+
+      function applySettings() {
+        snakeColor = document.getElementById("snakeColor").value;
+        foodColor = document.getElementById("foodColor").value;
+        speed = document.getElementById("speed").value;
+        clearInterval(game);
+        game = setInterval(draw, speed);
+      }
+
+      let game = setInterval(draw, speed);
+    </script>
+  </body>
 </html>
