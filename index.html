@@ -14,8 +14,15 @@
             align-items: center;
             height: 100vh;
             background-color: #f8f9fa;
-            margin: 0;
+           
             flex-direction: column;
+            border:2px solid black;
+            margin:0px;
+            background:url("https://cdn.pixabay.com/photo/2024/05/31/19/59/ai-generated-8801171_1280.png");
+
+            background-size: 500px 700px;
+           
+            
         }
 
         .container {
@@ -50,6 +57,11 @@
         .controls button {
             margin: 5px;
         }
+        
+
+
+
+
 
         /* Media queries for tablets */
         @media (max-width: 768px) {
@@ -73,8 +85,18 @@
             #restartButton {
                 font-size: 1rem;
             }
+           
         }
 
+        @media (min-width: 770px) and (max-width: 1500px) {
+            
+            .hi{
+                display:none;
+            }
+        }   
+
+
+        
         /* Media queries for phones */
         @media (max-width: 480px) {
             body {
@@ -97,24 +119,29 @@
             #restartButton {
                 font-size: 0.9rem;
             }
+
+        
         }
     </style>
 </head>
 <body>
+
+    
     <div class="container text-center">
         <h1>Snake Game</h1>
         <canvas id="gameCanvas" width="400" height="400"></canvas>
-        <div id="score">Score: 0</div>
+       
         <div class="controls">
-            <button class="btn btn-secondary" onclick="changeDirection('UP')">Up</button>
+            <button class="btn btn-secondary hi" onclick="changeDirection('UP')">Up</button>
         </div>
         <div class="controls">
-            <button class="btn btn-secondary" onclick="changeDirection('LEFT')">Left</button>
-            <button class="btn btn-secondary" onclick="changeDirection('DOWN')">Down</button>
-            <button class="btn btn-secondary" onclick="changeDirection('RIGHT')">Right</button>
+            <button class="btn btn-secondary hi" onclick="changeDirection('LEFT')">Left</button>
+            <button class="btn btn-secondary hi" onclick="changeDirection('DOWN')">Down</button>
+            <button class="btn btn-secondary hi" onclick="changeDirection('RIGHT')">Right</button>
         </div>
         <button id="restartButton" class="btn btn-primary mt-3" onclick="restartGame()">Restart Game</button>
         <div id="gameOver" class="mt-3"></div>
+        <div id="score"  >Score: 0</div>
     </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -122,8 +149,8 @@
         const box = 20;
         let snake = [[9 * box, 10 * box]];
         let food = [
-            Math.floor(Math.random() * 19 + 1) * box,
-            Math.floor(Math.random() * 19 + 1) * box
+            Math.floor(Math.random() * 20) * box,
+            Math.floor(Math.random() * 20) * box
         ];
         let score = 0;
         let d;
@@ -167,7 +194,7 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             for (let i = 0; i < snake.length; i++) {
-                ctx.fillStyle = i == 0 ? 'green' : 'white';
+                ctx.fillStyle = i == 0 ? 'blue' :"white";
                 ctx.fillRect(snake[i][0], snake[i][1], box, box);
                 ctx.strokeStyle = 'red';
                 ctx.strokeRect(snake[i][0], snake[i][1], box, box);
@@ -219,7 +246,7 @@
             game = setInterval(draw, 100);
         }
 
-        let game = setInterval(draw, 100);
+      let   game = setInterval(draw, 100);
     </script>
 </body>
 </html>

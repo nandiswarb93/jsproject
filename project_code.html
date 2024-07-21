@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Snake Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+        }
+        #game-container {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #game-canvas {
+            border: 1px solid #000;
+        }
+        #score {
+            margin-top: 10px;
+        }
+        #high-score {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Automated Snake Game</h1>
+    <div id="game-container">
+        <canvas id="game-canvas" width="400" height="400"></canvas>
+        <div id="score">Score: 0</div>
+        <div id="high-score">High Score: 0</div>
+    </div>
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+        const highScoreDisplay = document.getElementById('high-score');
+
+        const snake = [{ x: 200, y: 200 }];
+        let food = { x: 100, y: 100 };
+        let direction = 'RIGHT';
+        let score = 0;
+        let highScore = 0;
+        let gameInterval;
+
+        function startGame() {
+            clearInterval(gameInterval);
+            gameInterval = setInterval(() => {
+                update();
+                draw();
+            }, 10);
+        }
+
+        function update() {
+            const head = { ...snake[0] };
+            switch (direction) {
+                case 'UP': head.y -= 10; break;
+                case 'DOWN': head.y += 10; break;
+                case 'LEFT': head.x -= 10; break;
+                case 'RIGHT': head.x += 10; break;
+            }
+            snake.unshift(head);
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                scoreDisplay.textContent = `Score: ${score}`;
+                if (score > highScore) {
+                    highScore = score;
+                    highScoreDisplay.textContent = `High Score: ${highScore}`;
+                }
+                placeFood();
+            } else {
+                snake.pop();
+            }
+            checkCollision();
+            controlSnake();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            snake.forEach(segment => {
+                ctx.fillStyle = '#00ff00';
+                ctx.fillRect(segment.x, segment.y, 10, 10);
+            });
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(food.x, food.y, 10, 10);
+        }
+
+        function placeFood() {
+            food.x = Math.floor(Math.random() * canvas.width / 10) * 10;
+            food.y = Math.floor(Math.random() * canvas.height / 10) * 10;
+        }
+
+        function checkCollision() {
+            const head = snake[0];
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+                gameOver();
+            }
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    gameOver();
+                }
+            }
+        }
+
+        function gameOver() {
+            clearInterval(gameInterval);
+            alert(`Game Over! Your score: ${score}`);
+            score = 0;
+            scoreDisplay.textContent = `Score: ${score}`;
+            snake.length = 1;
+            snake[0] = { x: 200, y: 200 };
+            direction = 'RIGHT';
+            startGame();
+        }
+
+        function controlSnake() {
+            const head = snake[0];
+            if (food.x < head.x && direction !== 'RIGHT') {
+                direction = 'LEFT';
+            } else if (food.x > head.x && direction !== 'LEFT') {
+                direction = 'RIGHT';
+            } else if (food.y < head.y && direction !== 'DOWN') {
+                direction = 'UP';
+            } else if (food.y > head.y && direction !== 'UP') {
+                direction = 'DOWN';
+            }
+        }
+
+        startGame();
+    </script>
+</body>
+</html>
